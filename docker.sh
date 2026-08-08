@@ -72,15 +72,12 @@ getComposeIndicator() {
   running_count="$(docker compose -f "$compose_file" ps --services --filter status=running 2>/dev/null | grep -c .)"
   [[ "$service_count" -gt 0 ]] || return 0
 
-  local reset_fg
-  reset_fg="$(getResetFg)"
-
   if [[ "$running_count" -eq 0 ]]; then
-    echo "#[fg=#ff5555]○ down#[fg=${reset_fg}]"
+    echo "🔴 down"
   elif [[ "$running_count" -eq "$service_count" ]]; then
-    echo "#[fg=#50fa7b]● up#[fg=${reset_fg}]"
+    echo "🟢 up"
   else
-    echo "#[fg=#ffb86c]◐ ${running_count}/${service_count}#[fg=${reset_fg}]"
+    echo "🟡 ${running_count}/${service_count}"
   fi
 }
 
@@ -191,19 +188,6 @@ findComposeFile() {
     [[ -f "$dir/$name" ]] && echo "$dir/$name" && return 0
   done
   return 1
-}
-
-# Resolve the reset color the same way dracula.sh does
-getResetFg() {
-  local white="#f8f8f2" gray="#44475a" dark_gray="#282a36" light_purple="#bd93f9"
-  local dark_purple="#6272a4" cyan="#8be9fd" green="#50fa7b" orange="#ffb86c"
-  local red="#ff5555" purple="#b166cc" pink="#ff79c6" yellow="#f1fa8c"
-  local user_colors
-  user_colors="$(get_tmux_option "@dracula-colors" "")"
-  [[ -n "$user_colors" ]] && eval "$user_colors"
-  local plugin_colors
-  IFS=' ' read -r -a plugin_colors <<<"$(get_tmux_option "@dracula-custom-plugin-colors" "cyan dark_gray")"
-  echo "${!plugin_colors[1]}"
 }
 
 isStatSatisfied() {
